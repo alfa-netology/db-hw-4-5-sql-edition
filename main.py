@@ -1,33 +1,13 @@
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
-from datetime import timedelta
 import random
 import json
 
 from data import source
+from tools.time_converter import time_to_milliseconds, milliseconds_to_time
+from tools import connection
 
-
-def milliseconds_to_time(duration):
-    # преобразование в часы, минуты и секунды
-    seconds = int((duration/1000) % 60)
-    minutes = int((duration / (1000 * 60)) % 60)
-    hours = int((duration / (1000 * 60 * 60)) % 24)
-    return f"{hours:02}:{minutes:02}:{seconds:02}"
-
-def time_to_milliseconds(hours=0, minutes=0, seconds=0):
-    # преобразование в милисекунды
-    delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    return int(delta.total_seconds()) * 1000
-
-
-# подключение к бд
-with open('data/connection_settings') as file:
-    connection_settings = file.readline()
-
-dbase = connection_settings
-engine = sqlalchemy.create_engine(dbase)
-connection = engine.connect()
-
+connection = connection.create()
 queries = source.queries
 
 # удалем таблицы если он существуют
