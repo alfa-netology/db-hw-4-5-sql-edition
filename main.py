@@ -1,12 +1,11 @@
-import json
 import sqlalchemy
-
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import timedelta
 import random
+import json
 
-from sqlalchemy.exc import SQLAlchemyError
+from data import source
 
-import source
 
 def milliseconds_to_time(duration):
     # преобразование в часы, минуты и секунды
@@ -20,7 +19,9 @@ def time_to_milliseconds(hours=0, minutes=0, seconds=0):
     delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
     return int(delta.total_seconds()) * 1000
 
+
 # подключение к бд
+
 dbase = 'postgresql://alfa:prime@localhost:5432/muzic'
 engine = sqlalchemy.create_engine(dbase)
 connection = engine.connect()
@@ -32,7 +33,7 @@ connection.execute(queries.get('drop_tables'))
 # создем таблицы
 connection.execute(queries.get('create_tables'))
 # исходные данные об исполнителях
-with open('source_data.json', encoding='utf-8') as file:
+with open('data/performers_data.json', encoding='utf-8') as file:
     performers_data = json.load(file)
 
 album_id = 0
