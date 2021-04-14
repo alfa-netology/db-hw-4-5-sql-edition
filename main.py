@@ -21,8 +21,10 @@ def time_to_milliseconds(hours=0, minutes=0, seconds=0):
 
 
 # подключение к бд
+with open('data/connection_settings') as file:
+    connection_settings = file.readline()
 
-dbase = 'postgresql://alfa:prime@localhost:5432/muzic'
+dbase = connection_settings
 engine = sqlalchemy.create_engine(dbase)
 connection = engine.connect()
 
