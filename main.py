@@ -76,10 +76,12 @@ for collection_id in range(11):
     for i in range(random.randrange(10, 15, 1)):
         track_id = random.sample(range(0, track_max_id), 1)[0]
         sql = f"INSERT INTO TrackCollection VALUES ({track_id}, {collection_id})"
+        # рандом рандомом, но он бывает повторяется, подстрахуемся
         try:
             connection.execute(sql)
         except SQLAlchemyError as e:
-            pass
+            print("Упс! Что-то пошло не так, но ничего страшного. "
+                  "Мы с этим справимся.")
 
 # название и год выхода альбомов, вышедших в 2018 году;
 sql = "SELECT title, year FROM albums WHERE year=2018"
