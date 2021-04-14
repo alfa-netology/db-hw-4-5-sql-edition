@@ -10,9 +10,9 @@ from tools import connection
 connection = connection.create()
 queries = queries.data
 
-# удалем таблицы если он существуют
+# удалем отношения если он существуют
 connection.execute(queries.get('drop_tables'))
-# создем таблицы
+# создем отношения
 connection.execute(queries.get('create_tables'))
 # исходные данные об исполнителях
 with open('data/performers_data.json', encoding='utf-8') as file:
