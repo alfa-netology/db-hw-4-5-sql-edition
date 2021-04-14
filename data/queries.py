@@ -1,4 +1,4 @@
-queries = {
+data = {
     'drop_tables': 'DROP TABLE IF EXISTS '
                    'Albums,'
                    'Genres,'

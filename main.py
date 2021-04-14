@@ -3,12 +3,12 @@ from sqlalchemy.exc import SQLAlchemyError
 import random
 import json
 
-from data import source
+from data import queries
 from tools.time_converter import time_to_milliseconds, milliseconds_to_time
 from tools import connection
 
 connection = connection.create()
-queries = source.queries
+queries = queries.data
 
 # удалем таблицы если он существуют
 connection.execute(queries.get('drop_tables'))
