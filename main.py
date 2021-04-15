@@ -1,11 +1,7 @@
-import sqlalchemy
-from sqlalchemy.exc import SQLAlchemyError
-import random
-import json
-
 from data import queries
 from tools.time_converter import time_to_milliseconds, milliseconds_to_time
 from tools import connection
+from tools import insert_data
 
 connection = connection.create()
 queries = queries.data
@@ -14,74 +10,9 @@ queries = queries.data
 connection.execute(queries.get('drop_tables'))
 # создем отношения
 connection.execute(queries.get('create_tables'))
-# исходные данные об исполнителях
-with open('data/performers_data.json', encoding='utf-8') as file:
-    performers_data = json.load(file)
+# наполняем отношения данными
+insert_data.insert(connection)
 
-album_id = 0
-track_id = 0
-genres_id = 0
-genres = {}
-
-for performer_id, (performer_name, performer_data) in enumerate(performers_data.items()):
-    # наполняем отношение Performers
-    sql = f"INSERT INTO Performers VALUES ({performer_id}, '{performer_name}')"
-    connection.execute(sql)
-
-    # наполняем отношения Genres & PerformerGenre
-    for genre in performer_data.get('genres'):
-        if genre not in genres:
-            sql = f"INSERT INTO Genres VALUES ({genres_id}, '{genre}')"
-            connection.execute(sql)
-            genres[genre] = genres_id
-            genres_id += 1
-
-        sql = f"SELECT id FROM genres WHERE title='{genre}'"
-        genre_id = connection.execute(sql).fetchone()[0]
-
-        sql = f"INSERT INTO PerformerGenre VALUES ({performer_id}, {genre_id})"
-        connection.execute(sql)
-
-    # наполняем отношения Albums & PerformerAlbum
-    for album in performer_data.get('albums'):
-        album_title = album.get('title').replace("'", "''")
-        album_year = album.get('year')
-        if album_year != '0':
-            sql = f"INSERT INTO albums VALUES ({album_id}, '{album_title}', {album_year})"
-            connection.execute(sql)
-
-            sql = f"INSERT INTO PerformerAlbum VALUES ({performer_id}, {album_id})"
-            connection.execute(sql)
-
-            # наполняем отношение Tracks
-            for track in album.get('tracks'):
-                track_title = track.get('title').replace("'", "''")
-                track_duration = int(track.get('duration'))
-                sql = f"INSERT INTO tracks VALUES ({track_id}, '{track_title}', {track_duration}, {album_id})"
-                connection.execute(sql)
-                track_id += 1
-            album_id += 1
-
-# максимальный track_id (для генерации колекций)
-sql = f"SELECT * FROM tracks ORDER BY id DESC"
-track_max_id = connection.execute(sql).fetchone()[0]
-
-# наполняем отношение Collections & TrackCollection
-for collection_id in range(11):
-    collection_year = random.randrange(2015, 2022, 1)
-    collection_title = f"Collection #{collection_id}"
-    sql = f"INSERT INTO collections VALUES ({collection_id}, '{collection_title}', {collection_year})"
-    connection.execute(sql)
-
-    for i in range(random.randrange(10, 15, 1)):
-        track_id = random.sample(range(0, track_max_id), 1)[0]
-        sql = f"INSERT INTO TrackCollection VALUES ({track_id}, {collection_id})"
-        # рандом рандомом, но он бывает повторяется, подстрахуемся
-        try:
-            connection.execute(sql)
-        except SQLAlchemyError as e:
-            print("Упс! Что-то пошло не так, но ничего страшного. "
-                  "Мы с этим справимся.")
 
 # название и год выхода альбомов, вышедших в 2018 году;
 sql = "SELECT title, year FROM albums WHERE year=2018"
@@ -99,7 +30,8 @@ print(f"{result[0]}: {milliseconds_to_time(result[1])}")
 # название треков, продолжительность которых не менее 3,5 минуты;
 track_duration = time_to_milliseconds(minutes=3, seconds=30)
 sql = f"SELECT title, duration FROM tracks WHERE duration >= {track_duration} ORDER BY title"
-result = connection.execute(sql).fetchall()
+# result = connection.execute(sql).fetchall()
+result = connection.execute(sql).fetchmany(10)
 print('\nТрэки продолжительностью не менее 3,5 минут:')
 for row in result:
     print(f"[{milliseconds_to_time(row[1])}] {row[0]}")
@@ -120,7 +52,8 @@ for row in result:
 
 # название треков, которые содержат слово "мой"/"my".
 sql = "SELECT title, duration FROM tracks WHERE title ~* '( my |мой )' or title ~* '(^my |^мой )';"
-result = connection.execute(sql).fetchall()
+# result = connection.execute(sql).fetchall()
+result = connection.execute(sql).fetchmany(10)
 print('\nНазвание треков, которые содержат слово "мой"/"my":')
 for row in result:
     print(f"[{milliseconds_to_time(row[1])}] {row[0]}")
