@@ -19,7 +19,7 @@ sql = "SELECT title, year FROM albums WHERE year=2018"
 result = connection.execute(sql).fetchall()
 print('Альбомы вышедшие в 2018 году:')
 for row in result:
-    print(f"{row[0]:.<45}{row[1]}")
+    print(f"[{row[1]}] {row[0]}")
 
 # название и продолжительность самого длительного трека;
 sql = "SELECT title, duration FROM tracks ORDER BY duration DESC"
