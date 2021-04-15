@@ -115,13 +115,16 @@ for row in result:
     print(f"[{milliseconds_to_time(row[0])}] [{row[1]}] {row[2]}")
 
 # все исполнители, которые не выпустили альбомы в 2020 году;
+sql = "SELECT name " \
+      "FROM Performers " \
+      "WHERE name NOT IN " \
+      "(SELECT DISTINCT Performers.name " \
+      "FROM PerformerAlbum " \
+      "INNER JOIN Performers ON Performers.id = PerformerAlbum.performer_id " \
+      "INNER JOIN Albums ON Albums.id = PerformerAlbum.album_id " \
+      "WHERE albums.year = 2020)"
 
-
-
-
-
-
-
-
-
-
+result = connection.execute(sql).fetchall()
+print('\nВсе исполнители, которые не выпустили альбомы в 2020 году:')
+for row in result:
+    print(row[0])
