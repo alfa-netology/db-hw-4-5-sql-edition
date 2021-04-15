@@ -71,7 +71,7 @@ sql = "SELECT * FROM " \
       "INNER JOIN Performers ON Performers.id = PerformerGenre.performer_id " \
       "INNER JOIN Genres ON Genres.id = PerformerGenre.genre_id " \
       "GROUP BY genres.title) as TEMP " \
-      "ORDER BY count DESC"
+      "ORDER BY count DESC, title"
 
 result = connection.execute(sql)
 print('\nКоличество исполнителей в каждом жанре')
