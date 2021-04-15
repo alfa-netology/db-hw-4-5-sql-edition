@@ -69,5 +69,5 @@ def insert(connection):
                 connection.execute(sql)
             except SQLAlchemyError as e:
                 print(e)
-                print("\nУпс! Что-то пошло не так, но ничего страшного. "
-                      "Мы с этим справимся.")
+                print("Упс! Что-то пошло не так, но ничего страшного. "
+                      "Мы с этим справимся.\n")

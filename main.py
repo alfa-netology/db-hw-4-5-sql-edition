@@ -22,9 +22,15 @@ for row in result:
     print(f"[{row[1]}] {row[0]}")
 
 # название и продолжительность самого длительного трека;
+# Вариант 1
 sql = "SELECT title, duration FROM tracks ORDER BY duration DESC"
 result = connection.execute(sql).fetchone()
-print('\nСамый продолжительный трэк:')
+print('\nСамый продолжительный трэк [вариант 1]:')
+print(f"{result[0]}: {milliseconds_to_time(result[1])}")
+# Вариант 2
+slq = "SELECT title, duration FROM tracks WHERE duration=(SELECT MAX(duration) FROM tracks)"
+result = connection.execute(sql).fetchone()
+print('\nСамый продолжительный трэк [вариант 2]:')
 print(f"{result[0]}: {milliseconds_to_time(result[1])}")
 
 # название треков, продолжительность которых не менее 3,5 минуты;
@@ -57,3 +63,24 @@ result = connection.execute(sql).fetchmany(10)
 print('\nНазвание треков, которые содержат слово "мой"/"my":')
 for row in result:
     print(f"[{milliseconds_to_time(row[1])}] {row[0]}")
+
+# количество исполнителей в каждом жанре (сортировка по количеству);
+sql = "SELECT * FROM " \
+      "(SELECT genres.title, COUNT(performers.name) " \
+      "FROM PerformerGenre " \
+      "INNER JOIN Performers ON Performers.id = PerformerGenre.performer_id " \
+      "INNER JOIN Genres ON Genres.id = PerformerGenre.genre_id " \
+      "GROUP BY genres.title) as TEMP " \
+      "ORDER BY count DESC"
+
+result = connection.execute(sql)
+print('\nКоличество исполнителей в каждом жанре')
+for row in result:
+    print(f"{row[0]:.<20}{row[1]}")
+
+# количество треков, вошедших в альбомы 2019-2020 годов;
+
+
+
+
+
