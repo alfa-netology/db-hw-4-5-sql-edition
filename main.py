@@ -70,7 +70,7 @@ sql = "SELECT * FROM " \
       "FROM PerformerGenre " \
       "INNER JOIN Performers ON Performers.id = PerformerGenre.performer_id " \
       "INNER JOIN Genres ON Genres.id = PerformerGenre.genre_id " \
-      "GROUP BY genres.title) as TEMP " \
+      "GROUP BY genres.title) AS result " \
       "ORDER BY count DESC, title"
 
 result = connection.execute(sql)
@@ -114,7 +114,7 @@ print('\nСредняя продолжительность треков по к�
 for row in result:
     print(f"[{milliseconds_to_time(row[0])}] [{row[1]}] {row[2]}")
 
-
+# все исполнители, которые не выпустили альбомы в 2020 году;
 
 
 
