@@ -1,7 +1,8 @@
-from data import queries
-from tools.time_converter import time_to_milliseconds, milliseconds_to_time
 from tools import connection
+from data import queries
 from tools import insert_data
+from tools.time_converter import time_to_milliseconds, milliseconds_to_time
+
 
 connection = connection.create()
 queries = queries.data
