@@ -97,10 +97,26 @@ sql = "SELECT * FROM " \
       "GROUP BY albums.title, albums.year) AS result " \
       "ORDER BY count"
 
-result = connection.execute(sql)
+result = connection.execute(sql).fetchall()
 print('\nКоличество треков, вошедших в каждый альбом выпущенный в 2019-2020 годах:')
 for row in result:
     print(f"[{row[1]}] {row[2]:.<35}{row[0]}")
+
+# средняя продолжительность треков по каждому альбому;
+sql = "SELECT * FROM (SELECT AVG(tracks.duration),  albums.year, albums.title " \
+      "FROM tracks " \
+      "INNER JOIN albums ON tracks.album_id = albums.id " \
+      "GROUP BY albums.title, albums.year) AS result " \
+      "ORDER BY title"
+
+result = connection.execute(sql).fetchmany(10)
+print('\nСредняя продолжительность треков по каждому альбому:')
+for row in result:
+    print(f"[{milliseconds_to_time(row[0])}] [{row[1]}] {row[2]}")
+
+
+
+
 
 
 
