@@ -74,11 +74,36 @@ sql = "SELECT * FROM " \
       "ORDER BY count DESC, title"
 
 result = connection.execute(sql)
-print('\nКоличество исполнителей в каждом жанре')
+print('\nКоличество исполнителей в каждом жанре:')
 for row in result:
     print(f"{row[0]:.<20}{row[1]}")
 
-# количество треков, вошедших в альбомы 2019-2020 годов;
+#количество треков, вошедших в альбомы 2019-2020 годов;
+sql = "SELECT COUNT(tracks.title) " \
+      "FROM tracks " \
+      "WHERE album_id IN (SELECT id FROM albums WHERE year BETWEEN 2019 AND 2020)"
+
+result = connection.execute(sql).fetchone()
+print('\nКоличество треков, вошедших в альбомы 2019-2020 годов:')
+print(f"{result[0]}")
+
+# количество треков, вошедших в каждый альбом выпущенный 2019-2020 годов;
+# в задании не было, но было интересно реализовать
+sql = "SELECT * FROM " \
+      "(SELECT COUNT(tracks.title),  albums.year, albums.title " \
+      "FROM tracks " \
+      "INNER JOIN albums ON tracks.album_id = albums.id " \
+      "WHERE albums.year BETWEEN 2019 AND 2020 " \
+      "GROUP BY albums.title, albums.year) AS result " \
+      "ORDER BY count"
+
+result = connection.execute(sql)
+print('\nКоличество треков, вошедших в каждый альбом выпущенный в 2019-2020 годах:')
+for row in result:
+    print(f"[{row[1]}] {row[2]:.<35}{row[0]}")
+
+
+
 
 
 
