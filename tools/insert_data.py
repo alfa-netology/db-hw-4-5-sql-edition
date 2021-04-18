@@ -35,6 +35,7 @@ def insert(connection):
             album_title = album.get('title').replace("'", "''")
             album_year = album.get('year')
             if album_year != '0':
+                print(f"{album_id};{album_title};{album_year}")
                 sql = f"INSERT INTO albums VALUES ({album_id}, '{album_title}', {album_year})"
                 connection.execute(sql)
 

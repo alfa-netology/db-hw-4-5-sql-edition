@@ -44,11 +44,12 @@ def number_4(connection):
 
     # название треков, которые содержат слово "мой"/"my".
     sql = "SELECT title, duration FROM tracks WHERE title ~* '( my |мой )' or title ~* '(^my |^мой )';"
-    result = connection.execute(sql).fetchmany(10)
+    result = connection.execute(sql).fetchall()
     print('\nНазвание треков, которые содержат слово "мой"/"my":')
     for row in result:
         print(f"[{milliseconds_to_time(row[1])}] {row[0]}")
 
+def number_5(connection):
     # количество исполнителей в каждом жанре (сортировка по количеству);
     sql = "SELECT * FROM " \
           "(SELECT genres.title, COUNT(performers.name) " \
@@ -63,7 +64,6 @@ def number_4(connection):
     for row in result:
         print(f"{row[0]:.<20}{row[1]}")
 
-def number_5(connection):
     # количество треков, вошедших в альбомы 2019-2020 годов;
     # вариант 1
     sql = "SELECT COUNT(tracks.title) " \
