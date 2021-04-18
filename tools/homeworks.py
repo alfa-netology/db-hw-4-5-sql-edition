@@ -65,12 +65,23 @@ def number_4(connection):
 
 def number_5(connection):
     # количество треков, вошедших в альбомы 2019-2020 годов;
+    # вариант 1
     sql = "SELECT COUNT(tracks.title) " \
           "FROM tracks " \
           "WHERE album_id IN (SELECT id FROM albums WHERE year BETWEEN 2019 AND 2020)"
 
     result = connection.execute(sql).fetchone()
-    print('\nКоличество треков, вошедших в альбомы 2019-2020 годов:')
+    print('\nКоличество треков, вошедших в альбомы 2019-2020 годов [вариант 1]:')
+    print(f"{result[0]}")
+
+    # вариант 2
+    sql = "SELECT COUNT(tracks.title) " \
+          "FROM albums " \
+          "JOIN tracks ON tracks.album_id = albums.id " \
+          "WHERE albums.year BETWEEN 2019 and 2020;"
+
+    result = connection.execute(sql).fetchone()
+    print('\nКоличество треков, вошедших в альбомы 2019-2020 годов [вариант 2]:')
     print(f"{result[0]}")
 
     # количество треков, вошедших в каждый альбом выпущенный 2019-2020 годов;
@@ -78,7 +89,7 @@ def number_5(connection):
     sql = "SELECT * FROM " \
           "(SELECT COUNT(tracks.title),  albums.year, albums.title " \
           "FROM tracks " \
-          "INNER JOIN albums ON tracks.album_id = albums.id " \
+          "JOIN albums ON tracks.album_id = albums.id " \
           "WHERE albums.year BETWEEN 2019 AND 2020 " \
           "GROUP BY albums.title, albums.year) AS result " \
           "ORDER BY count"
@@ -89,14 +100,26 @@ def number_5(connection):
         print(f"[{row[1]}] {row[2]:.<35}{row[0]}")
 
     # средняя продолжительность треков по каждому альбому;
+    # вариант 1
     sql = "SELECT * FROM (SELECT AVG(tracks.duration),  albums.year, albums.title " \
           "FROM tracks " \
-          "INNER JOIN albums ON tracks.album_id = albums.id " \
+          "JOIN albums ON tracks.album_id = albums.id " \
           "GROUP BY albums.title, albums.year) AS result " \
           "ORDER BY title"
 
     result = connection.execute(sql).fetchmany(10)
-    print('\nСредняя продолжительность треков по каждому альбому:')
+    print('\nСредняя продолжительность треков по каждому альбому [вариант 1]:')
+    for row in result:
+        print(f"[{milliseconds_to_time(row[0])}] [{row[1]}] {row[2]}")
+
+    # вариант 2
+    sql = "SELECT AVG(tracks.duration), albums.year, albums.title " \
+          "FROM albums " \
+          "JOIN tracks ON tracks.album_id = albums.id " \
+          "GROUP BY albums.title, albums.year " \
+          "ORDER BY albums.title"
+    result = connection.execute(sql).fetchmany(10)
+    print('\nСредняя продолжительность треков по каждому альбому [вариант 2]:')
     for row in result:
         print(f"[{milliseconds_to_time(row[0])}] [{row[1]}] {row[2]}")
 
@@ -106,8 +129,8 @@ def number_5(connection):
           "WHERE name NOT IN " \
           "(SELECT DISTINCT Performers.name " \
           "FROM PerformerAlbum " \
-          "INNER JOIN Performers ON Performers.id = PerformerAlbum.performer_id " \
-          "INNER JOIN Albums ON Albums.id = PerformerAlbum.album_id " \
+          "JOIN Performers ON Performers.id = PerformerAlbum.performer_id " \
+          "JOIN Albums ON Albums.id = PerformerAlbum.album_id " \
           "WHERE albums.year = 2020)"
 
     result = connection.execute(sql).fetchall()
@@ -154,3 +177,58 @@ def number_5(connection):
     print('\nНазвание альбомов, в которых присутствуют исполнители более 1 жанра:')
     for row in result:
         print(row[0])
+
+    # наименование треков, которые не входят в сборники;
+    sql = "SELECT tracks.title " \
+          "FROM tracks " \
+          "LEFT JOIN TrackCollection on tracks.id = TrackCollection.track_id " \
+          "WHERE TrackCollection.track_id is NULL;"
+
+    result = connection.execute(sql).fetchmany(10)
+    print('\nНаименование треков, которые не входят в сборники:')
+    for row in result:
+        print(row[0])
+
+    # исполнителя(-ей), написавшего самый короткий по продолжительности трек
+    # (теоретически таких треков может быть несколько);
+    # так как в БД есть трэки с нулевой длительностью, добавил условие SELECT * FROM tracks WHERE duration <> 0
+    sql = "SELECT performers.name, tracks.title, tracks.duration " \
+          "FROM tracks " \
+          "LEFT JOIN albums on albums.id = tracks.album_id " \
+          "LEFT JOIN PerformerAlbum on PerformerAlbum.album_id = albums.id " \
+          "LEFT JOIN performers on performers.id = PerformerAlbum.performer_id " \
+          "GROUP BY performers.name, tracks.title, tracks.duration " \
+          "HAVING tracks.duration = (SELECT MIN(duration) FROM (SELECT * FROM tracks WHERE duration <> 0) temp) " \
+          "ORDER BY performers.name"
+
+    result = connection.execute(sql).fetchall()
+    print('\nИсполнители, написавшие самый короткий по продолжительности трек:')
+    for row in result:
+        print(f"{row[0]}::{row[1]}::{milliseconds_to_time(row[2])}")
+
+    # название альбомов, содержащих наименьшее количество треков.
+    sql = "SELECT DISTINCT albums.title " \
+          "FROM albums " \
+          "JOIN tracks ON tracks.album_id = albums.id " \
+          "WHERE tracks.album_id in ( " \
+          "SELECT album_id " \
+          "FROM tracks " \
+          "GROUP BY album_id " \
+          "HAVING COUNT(id) = ( " \
+          "SELECT COUNT(id) " \
+          "FROM tracks " \
+          "GROUP BY album_id " \
+          "ORDER BY count " \
+          "limit 1 )) " \
+          "ORDER BY albums.title"
+
+    result = connection.execute(sql).fetchall()
+    print('\nНазвание альбомов, содержащих наименьшее количество треков:')
+    for row in result:
+        print(row[0])
+
+
+
+
+
+
