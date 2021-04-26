@@ -197,9 +197,8 @@ def number_5(connection):
           "LEFT JOIN albums on albums.id = tracks.album_id " \
           "LEFT JOIN PerformerAlbum on PerformerAlbum.album_id = albums.id " \
           "LEFT JOIN performers on performers.id = PerformerAlbum.performer_id " \
-          "GROUP BY performers.name, tracks.title, tracks.duration " \
-          "HAVING tracks.duration = (SELECT MIN(duration) FROM (SELECT * FROM tracks WHERE duration <> 0) temp) " \
-          "ORDER BY performers.name"
+          "WHERE tracks.duration = (SELECT MIN(duration) FROM (SELECT * FROM tracks WHERE duration <> 0) temp) " \
+
 
     result = connection.execute(sql).fetchall()
     print('\nИсполнители, написавшие самый короткий по продолжительности трек:')
@@ -226,9 +225,3 @@ def number_5(connection):
     print('\nНазвание альбомов, содержащих наименьшее количество треков:')
     for row in result:
         print(row[0])
-
-
-
-
-
-
